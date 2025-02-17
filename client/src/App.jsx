@@ -30,9 +30,22 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const token = JSON.parse(sessionStorage.getItem("token"));
-    dispatch(checkAuth(token));
-  }, [dispatch]);
+    const tokenString = sessionStorage.getItem("token"); 
+    if (typeof tokenString === 'string') {
+      try {
+          const token = JSON.parse(tokenString);
+          dispatch(checkAuth(token));
+      } catch (e) {
+          console.error('Error parsing token', e);
+          // Optionally handle the error, e.g., clear the invalid token
+          sessionStorage.removeItem("token");
+          dispatch(checkAuth(null)); // Example: reset auth state if invalid token
+      }
+  } else {
+      // If there's no token (tokenString is null/undefined), handle it appropriately
+      dispatch(checkAuth(null)); // or whatever logic you need for no token
+  }
+}, [dispatch]);
 
   if (isLoading) return <Skeleton className="w-[800] bg-black h-[600px]" />;
 
